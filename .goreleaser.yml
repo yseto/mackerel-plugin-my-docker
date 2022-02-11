@@ -1,0 +1,15 @@
+builds:
+  - binary: mackerel-plugin-my-docker
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+archives:
+  - format: zip
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+release:
+  github:
+    owner: yseto
+    name: mackerel-plugin-my-docker
+
