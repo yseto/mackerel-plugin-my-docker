@@ -125,14 +125,14 @@ func (n MyDockerPlugin) FetchMetrics() (map[string]float64, error) {
 
 func (n MyDockerPlugin) MetricKeyPrefix() string {
 	if n.Prefix == "" {
-		n.Prefix = "docker"
+		n.Prefix = "mydocker"
 	}
 	return n.Prefix
 }
 
 func main() {
 	path := flag.String("socket", "/var/run/docker.sock", "docker-socket")
-	optPrefix := flag.String("metric-key-prefix", "docker", "Metric key prefix")
+	optPrefix := flag.String("metric-key-prefix", "mydocker", "Metric key prefix")
 	flag.Parse()
 
 	httpc := http.Client{
