@@ -106,16 +106,33 @@ func (n MyDockerPlugin) GraphDefinition() map[string]mp.Graphs {
 }
 
 func (n MyDockerPlugin) FetchMetrics() (map[string]float64, error) {
+	type Result struct {
+		Error    error
+		Response *Resource
+	}
+	walkContainers := func(containers []IdName) <-chan Result {
+		resultChan := make(chan Result)
+		for _, con := range containers {
+			go func(con IdName) {
+				resp, err := getStats(&n.c, con)
+				resultChan <- Result{Error: err, Response: resp}
+			}(con)
+		}
+		return resultChan
+	}
+
 	containers, err := getContainers(&n.c)
 	if err != nil {
 		return nil, err
 	}
+	results := walkContainers(containers)
 	kv := make(map[string]float64)
-	for _, i := range containers {
-		res, err := getStats(&n.c, i)
-		if err != nil {
+	for i := 0; i < len(containers); i++ {
+		result := <-results
+		if result.Error != nil {
 			return nil, err
 		}
+		res := result.Response
 		name := strings.Replace(res.ContainerName, "/", "", 1)
 		kv["memory."+name+".Usage"] = res.MemUsage
 		kv["cpu."+name+".Usage"] = res.CPUUsage
